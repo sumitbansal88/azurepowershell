@@ -1,0 +1,7 @@
+// First go ahead and create the App Service Plan
+
+az appservice plan create --name webappplan7000 --resource-group azuredemo --sku B1
+
+// Then go ahead and create the Azure Web App
+
+az webapp create --name webapp9000 --plan webappplan7000 --resource-group azuredemo
