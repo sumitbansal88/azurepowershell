@@ -1,0 +1,63 @@
+1. Create an app.yml file and enter the following content
+
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: app-deployment
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: my-app
+      template:
+        metadata:
+          labels:
+            app: my-app
+        spec:
+          containers:
+          - name: my-image
+            image: nginx
+            ports:
+            - containerPort: 80
+
+2. Create a service.yml file and enter the following content
+
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: my-service
+    spec:
+      type: LoadBalancer
+      ports:
+      - port: 80
+      selector:
+        app: my-app
+        
+        
+// Create a new resource group
+
+az group create --name kubernetes --location eastus
+
+// Create a new Kubernetes cluster
+
+az aks create --resource-group kubernetes --name companycluster --node-count 1 --enable-addons monitoring --generate-ssh-keys
+
+// Get the credentials of the cluster
+
+az aks get-credentials --resource-group kubernetes --name companycluster
+
+// Get the nodes running in the cluster
+
+kubectl get nodes
+
+// Apply the application configuration file
+
+kubectl apply -f app.yml
+
+// Apply the sercive configuration file
+
+kubectl apply -f service.yml
+
+// Get the list of services running in Kubernetes
+
+kubectl get services
