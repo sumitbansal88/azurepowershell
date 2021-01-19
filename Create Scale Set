@@ -5,4 +5,4 @@ az vmss create -n appvmset -g azuredemo --instance-count 1 --image Win2016Datace
 
 // Using custom script extensions for a scale set
 
-az vmss extension set --publisher "Microsoft.Compute" --version 1.10 --resource-group azuredemo --vmss-name appvmset --settings "appconfig.json" --name CustomScriptExtension
+az vmss extension set --publisher "Microsoft.Compute" --version 1.10 --resource-group azuredemo --vmss-name appvmset --settings "customScript.json" --name CustomScriptExtension
