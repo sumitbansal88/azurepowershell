@@ -6,3 +6,19 @@ az vmss create -n appvmset -g azuredemo --instance-count 1 --image Win2016Datace
 // Using custom script extensions for a scale set
 
 az vmss extension set --publisher "Microsoft.Compute" --version 1.10 --resource-group azuredemo --vmss-name appvmset --settings "customScript.json" --name CustomScriptExtension
+
+Add this into install.ps1 file-
+
+Add-WindowsFeature Web-Server
+Set-Content -Path "C:\inetpub\wwwroot\Default.html" -Value "This is the server $($env:computername) !"
+
+Commands to execute on azure CLI
+
+$config = @{
+   "fileUris" = (,"https://webstorelog1000.blob.core.windows.net/script/install.ps1");
+   "commandToExecute" = "powershell -ExecutionPolicy Unrestricted -File install.ps1"
+    }
+     
+    $set = Get-AzVmss -ResourceGroupName "test-grp" -VMScaleSetName "demoscaleset"
+    $set = Add-AzVmssExtension -VirtualMachineScaleSet $set -Name "customScript" -Publisher "Microsoft.Compute" -Type "CustomScriptExtension" -TypeHandlerVersion 1.9 -Setting $config
+    Update-AzVmss -ResourceGroupName "test-grp" -Name "demoscaleset" -VirtualMachineScaleSet $set
