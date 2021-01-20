@@ -1,0 +1,89 @@
+Install the Azure command line interface
+
+curl -sL https://packages.microsoft.com/keys/microsoft.asc | \
+
+    gpg --dearmor | \
+
+    sudo tee /etc/apt/trusted.gpg.d/microsoft.asc.gpg > /dev/null
+
+// Setup the repository
+
+AZ_REPO=$(lsb_release -cs)
+
+echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
+
+    sudo tee /etc/apt/sources.list.d/azure-cli.list
+
+// Update the package index
+
+sudo apt-get update
+
+// Install the Azure command line interface
+
+sudo apt-get install azure-cli
+
+// Login into Azure
+
+sudo az login
+
+// Login in your repository
+
+sudo az acr login --name appregistry1000
+
+// Tag your repository
+
+sudo docker tag nginx appregistry1000.azurecr.io/nginx
+
+// Push the image to the repository
+
+sudo docker push appregistry1000.azurecr.io/nginx
+
+2. Use the following commands to give Kubernetes the permissions to pull images from Azure Container registry
+
+$AKS_RESOURCE_GROUP="test-grp"
+
+$AKS_CLUSTER_NAME="appcluster"
+
+$ACR_RESOURCE_GROUP="test-grp"
+
+$ACR_NAME="appregistry1000"
+
+$CLIENT_ID=$(az aks show --resource-group $AKS_RESOURCE_GROUP --name $AKS_CLUSTER_NAME --query "servicePrincipalProfile.clientId" --output tsv)
+
+$ACR_ID=$(az acr show --name $ACR_NAME --resource-group $ACR_RESOURCE_GROUP --query "id" --output tsv)
+
+az role assignment create --assignee $CLIENT_ID --role acrpull --scope $ACR_ID
+3. Create an app.yml file and enter the following content
+
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: app-deployment
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: my-app
+      template:
+        metadata:
+          labels:
+            app: my-app
+        spec:
+          containers:
+          - name: my-image
+            image: appregistry1000.azurecr.io/nginx
+            ports:
+            - containerPort: 80
+            
+            4. Create a service.yml file and enter the following content
+
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: my-service
+    spec:
+      type: LoadBalancer
+      ports:
+      - port: 80
+      selector:
+        app: my-app
